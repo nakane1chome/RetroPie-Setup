@@ -17,7 +17,8 @@ rp_module_section="opt"
 rp_module_flags="dispmanx !mali"
 
 function depends_dosbox() {
-    local depends=(libsdl1.2-dev libsdl-net1.2-dev libsdl-sound1.2-dev libasound2-dev libpng-dev automake autoconf zlib1g-dev subversion "$@")
+    local depends=(libasound2-dev libpng-dev automake autoconf zlib1g-dev subversion "$@")
+    [[ "$md_id" == "dosbox" ]] && depends+=(libsdl1.2-dev libsdl-net1.2-dev libsdl-sound1.2-dev)
     isPlatform "rpi" && depends+=(timidity freepats)
     getDepends "${depends[@]}"
 }
@@ -87,8 +88,10 @@ function midi_synth() {
     case "\$1" in
         "start")
             timidity -Os -iAD &
-            until [[ -n "\$(aconnect -o | grep TiMidity)" ]]; do
+            i=0
+            until [[ -n "\$(aconnect -o | grep TiMidity)" || "\$i" -ge 10 ]]; do
                 sleep 1
+                ((i++))
             done
             ;;
         "stop")
