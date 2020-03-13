@@ -235,6 +235,7 @@ function get_rpi_video() {
 
 function get_platform() {
     local architecture="$(uname --machine)"
+    local device_tree_id="$(tr -d -c '[:print:]' < /proc/device-tree/compatible )"
     if [[ -z "$__platform" ]]; then
         case "$(sed -n '/^Hardware/s/^.*: \(.*\)/\1/p' < /proc/cpuinfo)" in
             BCM*)
@@ -286,7 +287,12 @@ function get_platform() {
                         __platform="x86"
                         ;;
                 esac
-                ;;
+		case $device_tree_id in
+		    rockchip,rk3399-firefly-linuxrockchip,rk3399)
+			__platform="rk3399"
+			;;
+		esac
+		;;
         esac
     fi
 
@@ -325,6 +331,28 @@ function platform_rpi3() {
     __default_makeflags="-j2"
     __platform_flags="arm armv8 neon rpi gles"
 }
+
+#phil@firefly:~$ cat /sys/devices/platform/ff9a0000.gpu/misc/mali0/device/gpuinfo
+#Mali-T86x 4 cores r2p0 0x0860
+# Cortex-A72x2+Cortex-A53x4
+#
+#Features        : fp asimd evtstrm aes pmull sha1 sha2 crc32
+#CPU part        : 0xd03
+#CPU revision    : 4
+#
+#Features        : fp asimd evtstrm aes pmull sha1 sha2 crc32
+#CPU part        : 0xd08
+#CPU revision    : 2
+
+function platform_rk3399() {
+    __default_cflags="-O2 -march=armv8-a+crc -mtune=cortex-a72.cortex-a53  -ftree-vectorize -funsafe-math-optimizations"
+    __default_asflags=""
+    __default_makeflags="-j6"
+    # TODO find libmali for rk3399
+    #__platform_flags="arm armv8 neon mali gles "
+    __platform_flags="arm64 armv8 gles neon "
+}
+
 
 function platform_odroid-c1() {
     __default_cflags="-O2 -mcpu=cortex-a5 -mfpu=neon-vfpv4 -mfloat-abi=hard -ftree-vectorize -funsafe-math-optimizations"
