@@ -16,8 +16,10 @@ rp_module_licence="GPL2"
 rp_module_section="exp"
 
 function sources_lr-puae() {
-    gitPullOrClone "$md_build" https://github.com/libretro/libretro-uae.git
+#    gitPullOrClone "$md_build" https://github.com/libretro/libretro-uae.git
+    gitPullOrClone "$md_build" https://github.com/nakane1chome/libretro-uae.git
 }
+
 
 function build_lr-puae() {
     make
